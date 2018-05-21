@@ -36,9 +36,10 @@ class UploadFileManager extends \Phalcon\Mvc\User\Component {
             $dir = sys_get_temp_dir();
         }
         //保存するファイルを作成 
-        $path = tempnam($dir, '_G_');
+        $path = tempnam($dir, 'T_');
         return $path;
     }
+
 
     /**
      * Function Name : setImagefileStrage()
@@ -75,19 +76,19 @@ class UploadFileManager extends \Phalcon\Mvc\User\Component {
         if (!empty($dir)) {
             //ランダムで削除を行うか行わないかを判定
             if ($this->GC($value)) {
-            //パスでディレクトリーを開く
-            $dirHandle = opendir($dir);
-            //ファイルを一つずつ取り出して削除する
-            while (false !== ($fileName = readdir($dirHandle))) {
-                var_dump($fileName);
+                //パスでディレクトリーを開く
+                $dirHandle = opendir($dir);
+                //ファイルを一つずつ取り出して削除する
+                while (false !== ($fileName = readdir($dirHandle))) {
+                    var_dump($fileName);
 
-                if (mb_substr($fileName, 0, 3) == "_G_") {
-                    unlink($dir ."\\". $fileName);
+                    if (mb_substr($fileName, 0, 3) == "_G_") {
+                        unlink($dir . "\\" . $fileName);
+                    }
                 }
-            }
-            //ディレクトリーを閉じる
-            closedir($dirHandle);
-            return true;
+                //ディレクトリーを閉じる
+                closedir($dirHandle);
+                return true;
             }
         }
         return false;
@@ -132,7 +133,7 @@ class UploadFileManager extends \Phalcon\Mvc\User\Component {
             $diffX = 0;
         }
         // 新しく描画する土台画像を作成
-        $thumbnail = imagecreatetruecolor($w, $h);
+        $thumbnail = imagecreatetruecolor($thumbW, $thumbH);
 
         // 加工前のファイルをフォーマット別に読み出す（この他にも対応可能なフォーマット有り）
         switch ($type) {
@@ -153,7 +154,7 @@ class UploadFileManager extends \Phalcon\Mvc\User\Component {
                 return false;
         }
 
-        imagecopyresampled($thumbnail, $originalImage, 0, 0, $diffX, $diffY, $thumbW, $thumbH, $w, $h);
+        imagecopyresampled($thumbnail, $originalImage, 0, 0, $diffX, $diffY, $thumbW, $thumbH, $diffW, $diffH);
         //imagejpegなどは、変数で取得できず、アウトプットしてしまうため、バッファに記憶させている
         ob_start();
         switch ($type) {
@@ -175,6 +176,21 @@ class UploadFileManager extends \Phalcon\Mvc\User\Component {
         return $resize_image;
     }
 
+    /**
+     * Function Name : getResizeImagePath()
+     * @param type String $path : フルパス付ファイル名
+     * @return type
+     * 
+     * Created     : 2018-05-21 Shino.Yahatabara
+     * Modified    : 
+     * Description : 画像を保存し、画像のサイズを変更する
+     */
+        public static function getResizeImagePath($path) {
+        file_put_contents($path, UploadFileManager::getResizeImage($path));
+        return $path;
+    }
+
+    
     /**
      * Function Name : getImageType()
      * 
